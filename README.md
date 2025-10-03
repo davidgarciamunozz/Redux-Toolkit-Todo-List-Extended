@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Todo List con Redux Toolkit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación simple de Todo List que demuestra el uso de Redux Toolkit para gestión de estado global.
 
-Currently, two official plugins are available:
+## Estructura Redux
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Store Setup
+```typescript
+// store/store.ts
+import { configureStore } from '@reduxjs/toolkit';
+import todosReducer from './todosSlice';
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+export const store = configureStore({
+  reducer: {
+    todos: todosReducer
+  }
+});
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Estado y Acciones
+```typescript
+// store/todosSlice.ts
+import { createSlice } from '@reduxjs/toolkit';
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
+const todosSlice = createSlice({
+  name: 'todos',
+  initialState: { todos: [] },
+  reducers: {
+    addTodo: (state, action) => {
+      state.todos.push({
+        id: Date.now().toString(),
+        text: action.payload,
+        completed: false
+      });
     },
-  },
-])
+    toggleTodo: (state, action) => {
+      const todo = state.todos.find(todo => todo.id === action.payload);
+      if (todo) todo.completed = !todo.completed;
+    },
+    deleteTodo: (state, action) => {
+      state.todos = state.todos.filter(todo => todo.id !== action.payload);
+    }
+  }
+});
 ```
+
+## Uso en Componentes
+
+```typescript
+// Acceder al estado
+const todos = useAppSelector(state => state.todos.todos);
+
+// Despachar acciones
+const dispatch = useAppDispatch();
+dispatch(addTodo("Nueva tarea"));
+dispatch(toggleTodo(id));
+dispatch(deleteTodo(id));
+```
+
+## Beneficios de Redux Toolkit
+- Estado centralizado y predecible
+- Evita prop drilling
+- Fácil de escalar y mantener
+- Herramientas de desarrollo potentes
+
+## Tecnologías
+- React + TypeScript
+- Redux Toolkit
+- Vite
